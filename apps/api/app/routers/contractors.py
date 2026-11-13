@@ -13,6 +13,7 @@ from app.schemas.all_schemas import (
 )
 from app.services.contractor_service import register_contractor, normalize_phone_number
 from app.services.contractor_discovery_service import ContractorDiscoveryPipeline
+from app.services.outreach_service import generate_contractor_pitch
 from app.services.auth_service import get_current_user
 
 router = APIRouter(prefix="/contractors", tags=["Contractor Operations"])
@@ -23,6 +24,27 @@ class DiscoveryRequest(BaseModel):
     niche_id: str
     source: str = "OPENSTREETMAP"
     max_results: int = 10
+
+
+class PitchRequest(BaseModel):
+    niche_id: Optional[str] = None
+
+
+@router.post("/{id}/generate-pitch")
+async def create_contractor_pitch(
+    id: str,
+    req: PitchRequest = PitchRequest(),
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """Generates customized B2B partnership proposal (Email, SMS, Cold Call script)."""
+    try:
+        pitch = await generate_contractor_pitch(db=db, contractor_id=id, niche_id=req.niche_id)
+        return pitch
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("", response_model=List[ContractorResponse])

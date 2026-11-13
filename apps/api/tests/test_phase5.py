@@ -1,3 +1,4 @@
+import uuid
 import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app, lifespan
@@ -27,11 +28,12 @@ async def test_auto_generate_and_preview_landing_page():
             tokens = login_res.json()
             auth_headers = {"Authorization": f"Bearer {tokens['access_token']}"}
 
-            # 2. Create Website Property
+            # 2. Create Website Property with unique domain
+            site_domain = f"fortwayne-{uuid.uuid4().hex[:6]}-pros.com"
             site_res = await client.post(
                 "/api/v1/websites",
                 json={
-                    "domain": "fortwayne-restoration-pros.com",
+                    "domain": site_domain,
                     "title": "Fort Wayne Emergency Restoration Network",
                 },
                 headers=auth_headers,

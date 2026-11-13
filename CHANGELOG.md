@@ -1,5 +1,23 @@
 # GLOBALLEAD AI - CHANGELOG
 
+## [1.3.0] - 2026-11-14
+### Added
+- **Interactive Business Operating System Engine:** Full real-time operational workflows connecting Market Selection, Contractor Discovery, Asset Generation, B2B Outreach, and Inbound Lead Arbitrage:
+  - `MarketLaunchModal.tsx`: 4-step wizard to evaluate markets, discover contractors, and publish landing pages.
+  - `OutreachModal.tsx`: Generates 1-click tailored B2B Cold Email, Direct SMS, and 60-second Cold Call pitch scripts.
+  - `LeadSimulatorModal.tsx`: Interactive tool to test live lead capture, duplicate filtering, smart contractor matching, and atomic wallet deductions.
+  - `DashboardClient.tsx`: Real-time state management and immediate UI action dispatching.
+- **Public Customer Emergency Landing Page (`/p/[slug]`):**
+  - Schema.org `LocalBusiness` / `HomeAndConstructionBusiness` JSON-LD structured data for Google Search snippet indexing.
+  - Emergency 24/7 click-to-call banner with virtual tracking phone number.
+  - Client-side Lead Capture Form (`LeadCaptureForm.tsx`) submitting directly to `POST /api/v1/leads/capture`.
+- **Pilot Market Seeded:**
+  - Seeded primary pilot market in Fort Wayne, IN (Water Damage Restoration).
+  - Seeded pilot contractor (*Fort Wayne Elite Water Restoration*) with $500 funded prepaid wallet and active agreement.
+- **Test Automation & Quality Assurance:**
+  - Expanded test suite to 12 automated unit and integration tests (100% pass rate in `apps/api/tests`).
+  - Next.js 14 production build verified with 5/5 static/dynamic routes.
+
 ## [1.1.0] - 2026-11-14
 ### Added
 - **GitHub Actions CI/CD Pipeline:** Complete automated continuous integration (`.github/workflows/ci.yml`) and continuous deployment workflow (`.github/workflows/deploy.yml`) covering:

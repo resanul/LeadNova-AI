@@ -51,6 +51,80 @@ async def lifespan(app: FastAPI):
         # 3. 17 AI Agents
         await seed_agents(session)
 
+        # 4. Pilot Digital Assets & Market Setup
+        from app.models.entities import Website, LandingPage, City, Niche, Contractor, ContractorAgreement, Wallet
+        from app.services.website_factory_service import generate_and_publish_page
+
+        site_res = await session.execute(select(Website).limit(1))
+        site = site_res.scalars().first()
+        if not site:
+            site = Website(
+                domain="emergency-restoration-pros.com",
+                title="Fort Wayne Emergency Home Services Network",
+                is_published=True,
+            )
+            session.add(site)
+            await session.commit()
+            await session.refresh(site)
+
+        city_res = await session.execute(select(City).where(City.name == "Fort Wayne"))
+        city = city_res.scalars().first()
+        niche_res = await session.execute(select(Niche).where(Niche.slug == "water-damage-restoration"))
+        niche = niche_res.scalars().first()
+
+        if city and niche and site:
+            page_res = await session.execute(
+                select(LandingPage).where(LandingPage.slug == "fort-wayne-water-damage-restoration")
+            )
+            if not page_res.scalars().first():
+                await generate_and_publish_page(
+                    db=session,
+                    website_id=site.id,
+                    city_id=city.id,
+                    niche_id=niche.id,
+                    slug_override="fort-wayne-water-damage-restoration",
+                )
+
+            # Pilot contractor in Fort Wayne
+            con_res = await session.execute(
+                select(Contractor).where(Contractor.business_name == "Fort Wayne Elite Water Restoration")
+            )
+            con = con_res.scalars().first()
+            if not con:
+                con = Contractor(
+                    business_name="Fort Wayne Elite Water Restoration",
+                    owner_name="Marcus Vance",
+                    primary_phone="+12605550199",
+                    email="marcus@fwhomerestoration.com",
+                    city="Fort Wayne",
+                    state="IN",
+                    country="US",
+                    rating=4.9,
+                    review_count=128,
+                    verification_status="PHONE_VERIFIED",
+                    partner_status="ACTIVE",
+                    discovery_source="PILOT_SEED",
+                )
+                session.add(con)
+                await session.commit()
+                await session.refresh(con)
+
+                agreement = ContractorAgreement(
+                    contractor_id=con.id,
+                    niche_id=niche.id,
+                    lead_type="EXCLUSIVE",
+                    price_per_lead=75.0,
+                    is_active=True,
+                )
+                wallet = Wallet(
+                    contractor_id=con.id,
+                    balance=500.0,
+                    currency="USD",
+                )
+                session.add(agreement)
+                session.add(wallet)
+                await session.commit()
+
     yield
 
 
