@@ -1,0 +1,69 @@
+version: "3.8"
+
+services:
+  # Primary Database with PostGIS
+  db:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: globallead-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-globallead}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-globallead_secure_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-globallead_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432" # Bound locally, never public
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U globallead -d globallead_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis Event Bus & Cache
+  redis:
+    image: redis:7-alpine
+    container_name: globallead-redis
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  # Cloud Control Plane - FastAPI API Gateway
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: globallead-api
+    restart: always
+    environment:
+      DATABASE_URL: postgresql+asyncpg://globallead:globallead_secure_pw@db:5432/globallead_db
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-leadnova_super_secure_key_2026}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # Cloud Control Plane - Next.js Admin Dashboard
+  admin-web:
+    build:
+      context: ./apps/admin-web
+      dockerfile: Dockerfile
+    container_name: globallead-admin-web
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
