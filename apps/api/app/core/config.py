@@ -35,8 +35,9 @@ class Settings(BaseSettings):
     TWILIO_AUTH_TOKEN: str = "mock_twilio_auth_token"
     DEFAULT_CALL_TIMEOUT_SECONDS: int = 60
 
-    # AI Provider
-    AI_PROVIDER: str = "mock_gateway"
+    # AI Provider (Google Antigravity Engine)
+    AI_PROVIDER: str = "antigravity"
+    AI_MODEL_NAME: str = "gemini-3.8-flash"
     GEMINI_API_KEY: str = ""
 
     model_config = SettingsConfigDict(

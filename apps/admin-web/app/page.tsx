@@ -26,6 +26,8 @@ import {
   fetchCities,
   fetchLeads,
   fetchRankedOpportunities,
+  fetchWebsites,
+  fetchLandingPages,
 } from "@/lib/api";
 
 export const revalidate = 0;
@@ -38,6 +40,8 @@ export default async function DashboardPage() {
   const cities = await fetchCities();
   const leads = await fetchLeads();
   const opportunities = await fetchRankedOpportunities();
+  const websites = await fetchWebsites();
+  const landingPages = await fetchLandingPages();
 
   return (
     <div className="flex min-h-screen">
@@ -278,6 +282,48 @@ export default async function DashboardPage() {
             </div>
           </section>
         </div>
+
+        {/* Digital Assets & Published Landing Pages */}
+        <section id="websites" className="rounded-2xl border border-slate-800 bg-[#0e1526]/80 p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 className="text-base font-semibold text-white flex items-center space-x-2">
+              <Globe className="h-4 w-4 text-emerald-400" />
+              <span>Digital Assets & AI Landing Page Factory</span>
+            </h3>
+            <span className="text-xs text-slate-400">{landingPages.length} Landing Pages Published</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {landingPages.length === 0 ? (
+              <div className="col-span-full py-6 text-center text-xs text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                No landing pages generated yet. Use the automated generator API to publish location-specific pages.
+              </div>
+            ) : (
+              landingPages.map((p: any) => (
+                <div key={p.id} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-white truncate">{p.slug}</span>
+                    <span className="inline-flex rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/20">
+                      Live
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 line-clamp-1">{p.headline}</p>
+                  <div className="pt-2 flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-800">
+                    <span className="text-blue-400 font-medium">📞 {p.tracking_phone || "Assigned"}</span>
+                    <a
+                      href={`http://localhost:8000/api/v1/landing-pages/${p.slug}/preview`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-400 hover:text-blue-300 transition"
+                    >
+                      View Preview →
+                    </a>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
 
         {/* Market Opportunities & 25 Niches Grid */}
         <section id="market" className="rounded-2xl border border-slate-800 bg-[#0e1526]/80 p-6 space-y-4">

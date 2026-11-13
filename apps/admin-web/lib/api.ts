@@ -80,3 +80,23 @@ export async function fetchRankedOpportunities() {
     return [];
   }
 }
+
+export async function fetchWebsites() {
+  try {
+    const res = await fetch(`${API_BASE}/websites`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to fetch websites");
+    return await res.json();
+  } catch (err) {
+    return [];
+  }
+}
+
+export async function fetchLandingPages() {
+  try {
+    const res = await fetch(`${API_BASE}/landing-pages`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to fetch landing pages");
+    return await res.json();
+  } catch (err) {
+    return [];
+  }
+}
