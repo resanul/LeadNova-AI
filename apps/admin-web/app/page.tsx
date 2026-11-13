@@ -106,6 +106,12 @@ export default async function DashboardPage() {
               FastAPI v1.0.0 Connected
             </span>
             <a
+              href="/login"
+              className="inline-flex items-center space-x-1.5 rounded-lg border border-blue-500/30 bg-blue-600/10 px-3 py-2 text-xs font-semibold text-blue-400 hover:bg-blue-600/20 transition"
+            >
+              <span>Admin Login</span>
+            </a>
+            <a
               href="http://localhost:8000/api/v1/contractors/export/csv"
               target="_blank"
               rel="noopener noreferrer"
