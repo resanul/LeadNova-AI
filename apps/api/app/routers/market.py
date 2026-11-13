@@ -11,6 +11,9 @@ from app.schemas.all_schemas import (
     OpportunityResponse, OpportunityEvaluateRequest,
 )
 from app.services.market_service import calculate_opportunity_score
+from app.services.keyword_service import generate_keyword_intelligence
+from app.services.competitor_service import analyze_market_competitors
+from app.services.geo_expansion_service import discover_surrounding_cities
 from app.services.auth_service import get_current_user
 
 router = APIRouter(prefix="", tags=["Market Intelligence"])
@@ -67,13 +70,19 @@ async def list_opportunities(db: AsyncSession = Depends(get_db)):
     return res.scalars().all()
 
 
+@router.get("/opportunities/rank", response_model=List[OpportunityResponse])
+async def rank_opportunities(db: AsyncSession = Depends(get_db)):
+    """Ranks market opportunities by overall multi-factor profitability score."""
+    res = await db.execute(select(Opportunity).order_by(Opportunity.overall_score.desc()))
+    return res.scalars().all()
+
+
 @router.post("/opportunities/evaluate", response_model=OpportunityResponse)
 async def evaluate_market_opportunity(
     req: OpportunityEvaluateRequest,
     db: AsyncSession = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    # Fetch city and niche
     city_res = await db.execute(select(City).where(City.id == req.city_id))
     city = city_res.scalars().first()
     if not city:
@@ -84,7 +93,6 @@ async def evaluate_market_opportunity(
     if not niche:
         raise HTTPException(status_code=404, detail="Niche not found")
 
-    # Count contractors in that city
     contractor_res = await db.execute(select(Contractor).where(Contractor.city.ilike(city.name)))
     contractors = contractor_res.scalars().all()
     contractor_count = len(contractors)
@@ -96,7 +104,6 @@ async def evaluate_market_opportunity(
         median_income=float(city.median_income),
     )
 
-    # Check if opportunity already exists
     opp_res = await db.execute(
         select(Opportunity).where(Opportunity.city_id == city.id, Opportunity.niche_id == niche.id)
     )
@@ -118,3 +125,56 @@ async def evaluate_market_opportunity(
     await db.commit()
     await db.refresh(opp)
     return opp
+
+
+@router.get("/market/keywords")
+async def get_market_keywords(
+    city_id: str,
+    niche_id: str,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """Returns local keyword intelligence, CPC benchmarks, and search intent."""
+    city_res = await db.execute(select(City).where(City.id == city_id))
+    city = city_res.scalars().first()
+    if not city:
+        raise HTTPException(status_code=404, detail="City not found")
+
+    niche_res = await db.execute(select(Niche).where(Niche.id == niche_id))
+    niche = niche_res.scalars().first()
+    if not niche:
+        raise HTTPException(status_code=404, detail="Niche not found")
+
+    return generate_keyword_intelligence(city_name=city.name, niche_name=niche.name)
+
+
+@router.get("/market/competitors")
+async def get_market_competitors(
+    city_id: str,
+    niche_id: str,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """Analyzes local competitor saturation and market penetration difficulty."""
+    city_res = await db.execute(select(City).where(City.id == city_id))
+    city = city_res.scalars().first()
+    if not city:
+        raise HTTPException(status_code=404, detail="City not found")
+
+    niche_res = await db.execute(select(Niche).where(Niche.id == niche_id))
+    niche = niche_res.scalars().first()
+    if not niche:
+        raise HTTPException(status_code=404, detail="Niche not found")
+
+    return await analyze_market_competitors(db, city_name=city.name, niche_name=niche.name)
+
+
+@router.get("/market/surrounding-cities")
+async def get_surrounding_cities(
+    city_id: str,
+    radius_miles: float = 30.0,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """Expands geographic coverage to surrounding satellite cities."""
+    return await discover_surrounding_cities(db, base_city_id=city_id, radius_miles=radius_miles)

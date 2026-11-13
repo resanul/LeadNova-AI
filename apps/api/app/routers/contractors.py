@@ -1,5 +1,8 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+import io
+import csv
+from fastapi import APIRouter, Depends, HTTPException, status, Response
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.core.database import get_db
@@ -9,9 +12,17 @@ from app.schemas.all_schemas import (
     AgreementResponse, AgreementCreate,
 )
 from app.services.contractor_service import register_contractor, normalize_phone_number
+from app.services.contractor_discovery_service import ContractorDiscoveryPipeline
 from app.services.auth_service import get_current_user
 
 router = APIRouter(prefix="/contractors", tags=["Contractor Operations"])
+
+
+class DiscoveryRequest(BaseModel):
+    city_id: str
+    niche_id: str
+    source: str = "OPENSTREETMAP"
+    max_results: int = 10
 
 
 @router.get("", response_model=List[ContractorResponse])
@@ -37,6 +48,62 @@ async def create_contractor(
 ):
     contractor = await register_contractor(db, contractor_in.model_dump())
     return contractor
+
+
+@router.post("/discover")
+async def trigger_contractor_discovery(
+    req: DiscoveryRequest,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """
+    Executes automated contractor discovery from OpenStreetMap / Google Places.
+    Normalizes phones, deduplicates, and populates the contractor CRM database.
+    """
+    try:
+        result = await ContractorDiscoveryPipeline.discover_contractors(
+            db=db,
+            city_id=req.city_id,
+            niche_id=req.niche_id,
+            source=req.source,
+            max_results=req.max_results,
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/export/csv")
+async def export_contractors_csv(
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """Exports all contractor records as CSV format with verification statuses."""
+    res = await db.execute(select(Contractor).order_by(Contractor.business_name))
+    contractors = res.scalars().all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "ID", "Business Name", "Owner", "Primary Phone", "Email", "Website",
+        "City", "State", "Rating", "Reviews", "Verification Status", "Partner Status", "Source"
+    ])
+    for c in contractors:
+        writer.writerow([
+            c.id, c.business_name, c.owner_name or "", c.primary_phone,
+            c.email or "", c.website or "", c.city, c.state,
+            float(c.rating), c.review_count, c.verification_status,
+            c.partner_status, c.discovery_source
+        ])
+
+    csv_content = output.getvalue()
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=contractors_export.csv"}
+    )
 
 
 @router.get("/{id}", response_model=ContractorResponse)

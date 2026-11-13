@@ -51,10 +51,30 @@ export async function fetchNiches() {
   }
 }
 
+export async function fetchCities() {
+  try {
+    const res = await fetch(`${API_BASE}/cities`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to fetch cities");
+    return await res.json();
+  } catch (err) {
+    return [];
+  }
+}
+
 export async function fetchLeads() {
   try {
     const res = await fetch(`${API_BASE}/leads`, { cache: "no-store" });
     if (!res.ok) throw new Error("Failed to fetch leads");
+    return await res.json();
+  } catch (err) {
+    return [];
+  }
+}
+
+export async function fetchRankedOpportunities() {
+  try {
+    const res = await fetch(`${API_BASE}/opportunities/rank`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to fetch ranked opportunities");
     return await res.json();
   } catch (err) {
     return [];

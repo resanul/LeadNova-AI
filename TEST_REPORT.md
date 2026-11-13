@@ -3,10 +3,10 @@
 ## 1. Executive Summary
 - **Test Date:** November 14, 2026
 - **Test Framework:** Pytest 9.2 with `pytest-asyncio`
-- **Total Test Cases Executed:** 6
-- **Passed:** 6 (100%)
+- **Total Test Cases Executed:** 8
+- **Passed:** 8 (100%)
 - **Failed:** 0 (0%)
-- **Execution Time:** ~3.38s
+- **Execution Time:** ~7.60s
 
 ---
 
@@ -21,7 +21,13 @@
 | `test_phone_normalization_invalid` | `app.services.contractor_service` | **PASSED** | Short/invalid telephone numbers set status to `FAILED_VERIFICATION` |
 | `test_opportunity_scoring_calculation` | `app.services.market_service` | **PASSED** | Multi-factor weighted formula computation matching approved weights |
 
-### 2.2 End-to-End Business Lifecycle Test (`apps/api/tests/test_integration.py`)
+### 2.2 Phase 3 & 4 Market & Discovery Tests (`apps/api/tests/test_phase3_4.py`)
+| Test Identifier | Component Under Test | Status | Assertion Focus |
+| :--- | :--- | :---: | :--- |
+| `test_haversine_distance` | `geo_expansion_service` | **PASSED** | Great-circle distance calculation for Fort Wayne & New Haven (~5.6 mi) |
+| `test_market_intelligence_and_discovery_pipeline` | Pipeline Integration | **PASSED** | End-to-end test of Keyword Intelligence, Competitor Analysis, Surrounding Cities Expansion, OSM/Places Contractor Discovery, and CSV Export |
+
+### 2.3 End-to-End Business Lifecycle Test (`apps/api/tests/test_integration.py`)
 | Step # | Lifecycle Event | Status | System Action Verified |
 | :---: | :--- | :---: | :--- |
 | **1** | System Health Check | **PASSED** | Returns status `OPERATIONAL` and verifies database engine connectivity |

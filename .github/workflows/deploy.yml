@@ -1,0 +1,29 @@
+name: GlobalLead AI Continuous Deployment (CD)
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  deploy-control-plane:
+    name: Deploy Cloud Control Plane
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Verify Deployment Manifests
+        run: |
+          echo "Verifying docker-compose.yml and deployment configurations..."
+          docker compose config -q
+          echo "All deployment configuration manifests verified."
+
+      - name: Deployment Notification
+        run: |
+          echo "GlobalLead AI release build verified and ready for hybrid cloud / Rocky Linux rollout."

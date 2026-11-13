@@ -12,8 +12,21 @@ import {
   ArrowUpRight,
   TrendingUp,
   Cpu,
+  Download,
+  Search,
+  Sparkles,
+  MapPin,
+  CheckCircle2,
 } from "lucide-react";
-import { fetchAnalytics, fetchAgents, fetchContractors, fetchNiches, fetchLeads } from "@/lib/api";
+import {
+  fetchAnalytics,
+  fetchAgents,
+  fetchContractors,
+  fetchNiches,
+  fetchCities,
+  fetchLeads,
+  fetchRankedOpportunities,
+} from "@/lib/api";
 
 export const revalidate = 0;
 
@@ -22,7 +35,9 @@ export default async function DashboardPage() {
   const agents = await fetchAgents();
   const contractors = await fetchContractors();
   const niches = await fetchNiches();
+  const cities = await fetchCities();
   const leads = await fetchLeads();
+  const opportunities = await fetchRankedOpportunities();
 
   return (
     <div className="flex min-h-screen">
@@ -90,8 +105,18 @@ export default async function DashboardPage() {
             <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400 border border-emerald-500/20">
               FastAPI v1.0.0 Connected
             </span>
-            <button className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-md hover:bg-blue-500 transition">
-              Dispatch Discovery Job
+            <a
+              href="http://localhost:8000/api/v1/contractors/export/csv"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-3.5 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition"
+            >
+              <Download className="h-3.5 w-3.5 text-slate-400" />
+              <span>Export CSV</span>
+            </a>
+            <button className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-md hover:bg-blue-500 transition flex items-center space-x-1.5">
+              <Search className="h-3.5 w-3.5" />
+              <span>Trigger Discovery</span>
             </button>
           </div>
         </header>
@@ -248,23 +273,27 @@ export default async function DashboardPage() {
           </section>
         </div>
 
-        {/* 25 High-Value Local Service Niches */}
+        {/* Market Opportunities & 25 Niches Grid */}
         <section id="market" className="rounded-2xl border border-slate-800 bg-[#0e1526]/80 p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <h3 className="text-base font-semibold text-white flex items-center space-x-2">
               <Briefcase className="h-4 w-4 text-amber-400" />
-              <span>High-Value Local Service Niches</span>
+              <span>High-Value Local Service Niches & Opportunity Intelligence</span>
             </h3>
             <span className="text-xs text-slate-400">25 High-Margin Categories</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {niches.slice(0, 15).map((n: any) => (
-              <div key={n.id} className="rounded-lg border border-slate-800 bg-slate-900/40 p-3 space-y-1">
+            {niches.map((n: any) => (
+              <div key={n.id} className="rounded-lg border border-slate-800 bg-slate-900/40 p-3 space-y-1 hover:border-amber-500/30 transition">
                 <p className="text-xs font-semibold text-slate-200 truncate">{n.name}</p>
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="text-slate-400">Lead Val:</span>
                   <span className="font-semibold text-emerald-400">${Number(n.avg_lead_value).toFixed(0)}</span>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-800/60">
+                  <span>Urgency:</span>
+                  <span className="capitalize text-amber-400">{n.emergency_level}</span>
                 </div>
               </div>
             ))}

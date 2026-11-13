@@ -1,5 +1,18 @@
 # GLOBALLEAD AI - CHANGELOG
 
+## [1.1.0] - 2026-11-14
+### Added
+- **GitHub Actions CI/CD Pipeline:** Complete automated continuous integration (`.github/workflows/ci.yml`) and continuous deployment workflow (`.github/workflows/deploy.yml`) covering:
+  - Backend Python 3.12 dependency installation, Pytest suite execution.
+  - Frontend Node.js 20 build verification (`next build`).
+  - Container build verification for `apps/api` and `apps/admin-web` Dockerfiles.
+- **Keyword Intelligence Engine (`keyword_service.py`):** Structured generator for primary, emergency, commercial, and long-tail keywords with estimated CPC indicators, search intent, and seasonal demand.
+- **Competitor Analysis Service (`competitor_service.py`):** Calculates competitor density, rating distributions, website penetration percentages, and market entry barrier scores.
+- **Geographic Expansion Engine (`geo_expansion_service.py`):** Autonomous discovery of surrounding satellite municipalities using Haversine great-circle distance (e.g. Fort Wayne -> New Haven, Auburn, Huntington, Columbia City).
+- **Automated Contractor Discovery Pipeline (`contractor_discovery_service.py`):** Pluggable adapters for OpenStreetMap (Nominatim search) and Google Places with phone normalization and duplicate protection.
+- **CSV Data Export:** Added streaming CSV export endpoint (`/api/v1/contractors/export/csv`) with verification details.
+- **Extended Test Suite:** Added `tests/test_phase3_4.py`, expanding automated test coverage to 8 comprehensive tests (100% pass rate).
+
 ## [1.0.0] - 2026-11-14
 ### Added
 - **Monorepo Architecture:** Established enterprise monorepo containing `apps/api`, `apps/admin-web`, `packages/`, `database/`, and `infrastructure/`.
