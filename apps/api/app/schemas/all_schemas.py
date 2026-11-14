@@ -151,6 +151,7 @@ class ContractorUpdate(BaseModel):
     email: Optional[EmailStr] = None
     website: Optional[str] = None
     address: Optional[str] = None
+    rating: Optional[float] = None
     verification_status: Optional[str] = None
     partner_status: Optional[str] = None
     verification_notes: Optional[str] = None

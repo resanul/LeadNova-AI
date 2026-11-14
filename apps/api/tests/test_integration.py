@@ -77,7 +77,7 @@ async def test_full_business_lifecycle():
             # Mark contractor as ACTIVE with highest rating to guarantee primary matching
             patch_res = await client.patch(
                 f"/api/v1/contractors/{contractor_id}",
-                json={"partner_status": "ACTIVE"},
+                json={"partner_status": "ACTIVE", "rating": 5.0},
                 headers=auth_headers,
             )
             assert patch_res.status_code == 200
